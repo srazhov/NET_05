@@ -7,10 +7,11 @@
     public class Executioner
     {
         private readonly Action OnExecuteAction;
+        private static readonly string databasePath = Path.Combine(Directory.GetCurrentDirectory().Replace("bin\\Debug", string.Empty), "DataSet1.mdf");
         private static SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder()
         {
             ["Data Source"] = "(LocalDB)\\MSSQLLocalDB",
-            ["AttachDbFilename"] = Path.Combine(Directory.GetCurrentDirectory().Replace("bin\\Debug", string.Empty), "DataSet1.mdf"),
+            ["AttachDbFilename"] = databasePath,
             ["integrated Security"] = true
         };
 
@@ -106,12 +107,11 @@ END";
                     {
                         Console.WriteLine(ex.Message);
                         command.CommandText =
-                            "TRUNCATE TABLE Attendance \n" +
-                            "TRUNCATE TABLE Students \n" +
-                            "TRUNCATE TABLE Lecture \n";
+                            "DROP TABLE Attendance, Students, Lecture \n" +
+                            "DROP PROCEDURE MarkAttendance";
                         command.ExecuteNonQuery();
 
-                        Console.WriteLine(" Data restored");
+                        Console.WriteLine("Please run -init again");
                     }
                 }
             }

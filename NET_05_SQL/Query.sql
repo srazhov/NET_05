@@ -144,7 +144,6 @@ FROM Orders
 GROUP BY EmployeeID
 ORDER BY Amount DESC
 
---НЕ ВЫПОЛНЕНО
 -- 6.3	По таблице Orders найти количество заказов, cделанных каждым продавцом и для каждого покупателя. 
 -- Необходимо определить это только для заказов сделанных в 1998 году.
 -- В результатах запроса надо высвечивать колонку с именем продавца (название колонки ‘Seller’), 
@@ -154,32 +153,49 @@ ORDER BY Amount DESC
 -- Группировки должны быть сделаны по ID продавца и покупателя. 
 -- Результаты запроса должны быть упорядочены по продавцу, покупателю и по убыванию количества продаж.
 -- В результатах должна быть сводная информация по продажам. 
-SELECT * FROM Orders WHERE EmployeeID = 0
+SELECT empl.EmployeeID AS Seller, cust.CustomerID AS Customer, COUNT(*) AS Amount
+FROM Orders o
+INNER JOIN Customers cust ON cust.CustomerID = o.CustomerID
+INNER JOIN Employees empl ON empl.EmployeeID = o.EmployeeID
+WHERE YEAR(OrderDate) = 1998
+GROUP BY empl.EmployeeID, cust.CustomerID
+ORDER BY [Seller], [Customer], [Amount] 
 
--- НЕ ВЫПОЛНЕНО
 -- 6.4	Найти покупателей и продавцов, которые живут в одном городе. Если в городе живут только один 
 -- или несколько продавцов или только один или несколько покупателей, то информация о таких покупателя и продавцах 
 -- не должна попадать в результирующий набор. Не использовать конструкцию JOIN. В результатах запроса необходимо 
 -- вывести следующие заголовки для результатов запроса: ‘Person’, ‘Type’ (здесь надо выводить строку ‘Customer’ или  
 -- ‘Seller’ в завимости от типа записи), ‘City’. 
 -- Отсортировать результаты запроса по колонке ‘City’ и по ‘Person’.
-SELECT COUNT(Cust.City), COUNT(empl.City)
-FROM Customers AS Cust, Employees as empl
+SELECT e.FirstName + ' ' + e.LastName AS [Person], cust.ContactName AS [Type], e.City
+FROM Employees e
+INNER JOIN Customers cust ON cust.City = e.City
+ORDER BY e.City, [Person]
 
--- НЕ ВЫПОЛНЕНО
 -- 6.5	Найти всех покупателей, которые живут в одном городе. В запросе использовать соединение таблицы Customers c собой 
 -- - самосоединение. Высветить колонки CustomerID и City. Запрос не должен высвечивать дублируемые записи. 
+SELECT CustomerID, City
+FROM Customers A
+WHERE EXISTS (
+	SELECT City
+	FROM Customers B
+	WHERE A.City = B.City AND NOT (A.CustomerID = B.CustomerID))
+
 -- Для проверки написать запрос, который высвечивает города, которые встречаются более одного раза в таблице Customers. 
 -- Это позволит проверить правильность запроса.
-SELECT A.CustomerID, A.City
-FROM Customers A, Customers B
-WHERE A.City = B.City AND A.CustomerID != B.CustomerID
+SELECT City
+FROM Customers
+GROUP BY City
+HAVING COUNT(CustomerID) > 1
 
--- НЕ ВЫПОЛНЕНО
 -- 6.6	По таблице Employees найти для каждого продавца его руководителя, т.е. кому он делает репорты. 
 -- Высветить колонки с именами 'User Name' (LastName) и 'Boss'. 
 -- В колонках должны быть высвечены имена из колонки LastName. Высвечены ли все продавцы в этом запросе?
-SELECT * FROM Employees
+
+-- В результатах нет Fuller'а, у которого нет руководителя 
+SELECT a.LastName AS [User Name], Boss
+FROM Employees a
+INNER JOIN (SELECT LastName AS [Boss], EmployeeID  FROM Employees b) AS b ON a.ReportsTo = b.EmployeeID
 
 -- 7.1	Определить продавцов, которые обслуживают регион 'Western' (таблица Region). 
 -- Результаты запроса должны высвечивать два поля: 'LastName' продавца и название обслуживаемой территории 
@@ -254,9 +270,6 @@ ORDER BY 'Price' DESC
 
 -- 13.2
 EXEC [ShippedOrdersDiff] 30
-
--- 13.3
-EXEC [SubordinationInfo] 2
 
 -- 13.4
 SELECT FirstName + ' ' + LastName, Northwind.dbo.IsBoss(EmployeeID) AS 'IsBoss'

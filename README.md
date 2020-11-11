@@ -9,3 +9,8 @@
 3. Запустить Adonet -init  
   
 Если хотите, можете переименовать "Adonet.exe" в "sc.exe"
+  
+## SQL Tasks
+  
+Все выполнено по инструкции. Сначала запускать Procedure.sql затем Query.sql  
+SQL Файлы находятся в папке [NET_O5_SQL](https://github.com/srazhov/NET_05/tree/master/NET_05_SQL) 
